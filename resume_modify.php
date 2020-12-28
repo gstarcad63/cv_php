@@ -1,75 +1,81 @@
 <?php
-
-// 开启session
 session_start();
-// 判断登录
-if ( intval( $_SESSION['uid'] ) < 1 )
+if( intval( $_SESSION['uid'] ) < 1 )
 {
-    header("Location:user_login.php");
-    die("请先<a href='user_login.php'>登录再添加简历</a>");
+    header("Location: user_login.php");
+    die("请先<a href='user_login.php'>登入</a>再添加简历"); 
 }
 
-$id = intval($_REQUEST);
-if ($id < 1) die("错误的简历");
+$id = intval( $_REQUEST['id'] );
+if( $id < 1 ) die("错误的简历ID");
 
-// 连接数据库
-try {
-    // 初始化PDO对象
+try
+{
     $dbh = new PDO('mysql:host=mysql.ftqq.com;dbname=fangtangdb', 'php', 'fangtang');
-
-    // 捕捉异常
     $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // 预处理sql模板  ?参数准备sql
     $sql = "SELECT * FROM `resume` WHERE `id` = ? LIMIT 1";
 
-    // 预处理对象
-    $sth = $dbh->prepare($sql);
-
-    // 执行sql语句
-    $ret = $sth->execute([$id]);
+    $sth = $dbh->prepare( $sql );
+    $ret = $sth->execute( [ $id ] );
     $resume = $sth->fetch(PDO::FETCH_ASSOC);
 
-    // 权限判断
-    if ( $resume['uid'] != $_SESSION['uid'] ) die("没有权限，只能修改自己的简历");
+    if( $resume['uid'] != $_SESSION['uid'] ) die("只能修改自己的简历");
 }
-// 错误处理
-
-// 全局异常
-catch (Exception $Exception) {
-    die($Exception->getMessage());
+catch( Exception $Exception )
+{
+    die( $Exception->getMessage() );
 }
-?>
 
+?><!doctype html>
+<html lang="zh-cn">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="app.css" />
+
     <title>修改简历</title>
-    <link rel="stylesheet" href="main.css">
-    <script src="http://lib.sinaapp.com/js/jquery/3.1.0/jquery-3.1.0.min.js"></script>
+  </head>
+  <body>
+    <!-- 页面内容区域 -->
+    <div class="container">
+        <div class="page-box">
+            <h1 class="page-title">修改简历</h1>
+
+            <form action="resume_update.php" method="post" id="form_resume" onsubmit="send_form('form_resume');return false;">
+            <div id="form_resume_notice" class="form_info middle"></div>
+
+            <div class="form-group">
+                <input type="text" name="title" placeholder="简历名称" class="form-control" value="<?=$resume['title']?>"/>
+            </div> 
+
+            <div class="form-group">
+                <textarea  rows="20" name="content" placeholder="简历内容，支持 Markdown 语法" class="form-control"><?=htmlspecialchars( $resume['content'] ) ?></textarea>
+            </div>
+
+            <input type="hidden" name="id" value="<?=$resume['id']?>"/>
+            
+            <div class="form-group"><input type="submit" value="更新简历" class="btn btn-primary">&nbsp;<input type="button" value="返回" class="btn btn-outline-secondary float-right" onClick="history.back(1);void(0);"></div>
+        </form>
+
+
+        </div>
+        
+    </div>
+
+    <!-- /页面内容区域 -->
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script src="main.js"></script>
-</head>
-<body>
-<div class="container">
-    <h1>修改简历</h1>
-    <form action="resume_update.php" method="post" id="form_resume" onsubmit="send_form('form_resume');return false;">
-        <div id="form_resume_notice" class="form_info full"></div>
-
-        <p><input type="text" name="title" placeholder="简历名称" class="full" value="<?=$resume['title']?>"></p>
-
-        <p><textarea name="content" placeholder="编辑简历内容，支持Markdown语法" class="full"><?=htmlspecialchars( $resume['content'] )?></textarea></p>
-
-        <input type="hidden" name="id" value="<?=$resume['id']?>">
-        <p>
-            <input type="submit" value="更新简历" class="middle-button">
-            <input type="button" value="返回首页" class="middle-button cancel-button" onClick="history.back(1);void(0);">
-        </p>
-    </form>
-</div>
-</body>
+  </body>
 </html>

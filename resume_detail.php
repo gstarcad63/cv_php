@@ -1,56 +1,59 @@
 <?php
 
-$id = intval( $_REQUEST );
-if ( $id < 1 ) die("错误的简历");
+$id = intval( $_REQUEST['id'] );
+if( $id < 1 ) die("错误的简历ID");
 
-// 连接数据库
-try {
-    // 初始化PDO对象
+try
+{
     $dbh = new PDO('mysql:host=mysql.ftqq.com;dbname=fangtangdb', 'php', 'fangtang');
-
-    // 捕捉异常
     $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // 预处理sql模板  ?参数准备sql
     $sql = "SELECT * FROM `resume` WHERE `id` = ? LIMIT 1";
 
-    // 预处理对象
     $sth = $dbh->prepare( $sql );
-
-    // 执行sql语句
-    $ret = $sth->execute( [$id] );
+    $ret = $sth->execute( [ $id ] );
     $resume = $sth->fetch(PDO::FETCH_ASSOC);
-
 }
-// 错误处理
-// 全局异常
-catch (Exception $Exception)
+catch( Exception $Exception )
 {
     die( $Exception->getMessage() );
 }
 
 include 'lib/Parsedown.php';
 $md = new Parsedown();
-?>
+?><!doctype html>
+<html lang="zh-cn">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title><?=$resume['title']?></title>
-    <link rel="stylesheet" href="main.css">
-    <script src="http://lib.sinaapp.com/js/jquery/3.1.0/jquery-3.1.0.min.js"></script>
-    <script src="main.js"></script>
-</head>
-<body>
-<div class="container">
-    <h1><?=$resume['title']?></h1>
-    <div class="content">
-        <?=$md->text( $resume['content'] )?>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="app.css" />
+
+    <title><?=strip_tags( $resume['title'] );?></title>
+  </head>
+  <body>
+    <!-- 页面内容区域 -->
+    <div class="container">
+        <div class="page-box">
+        <div class="content">
+            <?=$md->text( $resume['content'] )?>
+        </div>
+        </div>
+        
     </div>
-</div>
-</body>
+    
+        <!-- /页面内容区域 -->
+    
+    
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="main.js"></script>
+    </body>
 </html>
